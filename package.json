@@ -1,0 +1,15 @@
+{
+  "name": "alloyui-tasks",
+  "version": "0.0.1",
+  "description": "Gulp tasks for alloy modules.",
+  "license": "BSD",
+  "repository": "alloyui/tasks",
+  "author": {
+    "name": "Maira Bello",
+    "email": "maira.araujo@liferay.com"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "main": "./gulpfile.js"
+}
