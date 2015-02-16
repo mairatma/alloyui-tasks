@@ -26,11 +26,11 @@ gulp.task('build:globals', ['jspm'], function() {
   return gulp.src('src/*.js')
     .pipe(sourcemaps.init())
     .pipe(renamer({
-      basePath: __dirname,
-      configPath: path.join(__dirname, 'config.js')
+      basePath: process.cwd(),
+      configPath: path.resolve('config.js')
     }))
     .pipe(transpile({
-      basePath: __dirname,
+      basePath: process.cwd(),
       bundleFileName: pkg.name + '.js',
       formatter: new GlobalsFormatter({
         globalName: 'aui'
@@ -111,7 +111,7 @@ gulp.task('test:unit', ['jspm'], function(done) {
 
 gulp.task('test:coverage', ['jspm'], function(done) {
   runKarma({}, function() {
-    open(path.join(__dirname, 'coverage/lcov/lcov-report/index.html'));
+    open(path.resolve('coverage/lcov/lcov-report/index.html'));
     done();
   });
 });
@@ -154,7 +154,7 @@ function banner() {
 
 function runKarma(config, done) {
   config = merge({
-    configFile: __dirname + '/karma.conf.js',
+    configFile: path.resolve('/karma.conf.js'),
     singleRun: true
   }, config);
   karma.start(config, done);
