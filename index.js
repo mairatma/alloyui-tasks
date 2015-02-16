@@ -98,7 +98,7 @@ module.exports = function(options) {
   });
 
   gulp.task('test', function(done) {
-    return runSequence('test-unit', 'test-complexity', done);
+    return runSequence('test:unit', 'test:complexity', done);
   });
 
   gulp.task('test:complexity', function() {
@@ -159,7 +159,7 @@ function banner(pkg) {
 
 function runKarma(config, done) {
   config = merge({
-    configFile: path.resolve('/karma.conf.js'),
+    configFile: path.resolve('karma.conf.js'),
     singleRun: true
   }, config);
   karma.start(config, done);
