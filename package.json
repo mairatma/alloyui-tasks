@@ -11,9 +11,9 @@
   "engines": {
     "node": ">=0.10.0"
   },
-  "main": "./gulpfile.js",
+  "main": "./index.js",
   "files": [
-    "gulpfile.js"
+    "index.js"
   ],
   "dependencies": {
     "del": "^1.1.1",
