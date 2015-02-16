@@ -40,7 +40,7 @@ gulp.task('build:globals', ['jspm'], function() {
     .pipe(gulp.dest('build'));
 });
 
-gulp.task('build:min', ['build-raw'], function() {
+gulp.task('build:min', ['build:globals'], function() {
   return gulp.src('build/aui.js')
     .pipe(plugins.rename('aui-min.js'))
     .pipe(plugins.uglify({
