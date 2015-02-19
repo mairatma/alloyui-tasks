@@ -103,7 +103,7 @@ module.exports = function(options) {
   });
 
   gulp.task('test:complexity', function() {
-    return gulp.src(['src/**/*.js', '!src/promise/Promise.js', 'test/**/*.js'])
+    return gulp.src(['src/**/*.js', '!src/**/*.soy.js', '!src/promise/Promise.js', 'test/**/*.js'])
       .pipe(to5())
       .pipe(plugins.complexity({
         halstead: [15, 15, 20]
