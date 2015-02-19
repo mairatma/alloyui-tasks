@@ -91,7 +91,8 @@ module.exports = function(options) {
     return gulp.src('src/*.soy')
       .pipe(plugins.soynode())
       .pipe(plugins.wrapper({
-        footer: 'export default templates;'
+        header: '/* jshint ignore:start */',
+        footer: 'export default templates;\n/* jshint ignore:end */'
       }))
       .pipe(plugins.ignore.exclude('*.soy'))
       .pipe(gulp.dest('src'));
