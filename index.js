@@ -19,6 +19,7 @@ var transpile = require('gulp-es6-module-transpiler');
 
 module.exports = function(options) {
   var bundleFileName = options.bundleFileName;
+  var coreDir = options.coreDir || 'aui';
 
   gulp.task('build', function(done) {
     runSequence('clean', ['soy', 'copy'], ['build:globals', 'build:min'], done);
@@ -88,13 +89,19 @@ module.exports = function(options) {
   });
 
   gulp.task('soy', function() {
-    return gulp.src('src/*.soy')
-      .pipe(plugins.soynode())
-      .pipe(plugins.wrapper({
-        header: '/* jshint ignore:start */',
-        footer: 'export default templates;\n/* jshint ignore:end */'
+    var templatesModulePath = path.join(coreDir, '/soy/Templates');
+
+    return gulp.src('src/**/*.soy')
+      .pipe(plugins.soynode({
+        loadCompiledTemplates: false,
+        shouldDeclareTopLevelNamespaces: false
       }))
       .pipe(plugins.ignore.exclude('*.soy'))
+      .pipe(plugins.wrapper({
+        header: '/* jshint ignore:start */\n' +
+          'import Templates from \'' + templatesModulePath + '\';\n',
+        footer: '/* jshint ignore:end */\n'
+      }))
       .pipe(gulp.dest('src'));
   });
 
