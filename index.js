@@ -25,6 +25,7 @@ function handleError(error) {
 
 module.exports = function(options) {
   var bundleFileName = options.bundleFileName;
+  var corePathFromSoy = options.corePathFromSoy || 'aui';
 
   gulp.task('build', function(done) {
     runSequence('clean', ['soy', 'copy'], ['build:globals', 'build:min'], done);
@@ -98,13 +99,20 @@ module.exports = function(options) {
   });
 
   gulp.task('soy', function() {
-    return gulp.src('src/*.soy')
-      .pipe(plugins.soynode())
-      .pipe(plugins.wrapper({
-        header: '/* jshint ignore:start */',
-        footer: 'export default templates;\n/* jshint ignore:end */'
+    var registryModulePath = path.join(corePathFromSoy, '/component/ComponentRegistry');
+
+    return gulp.src('src/**/*.soy')
+      .pipe(plugins.soynode({
+        loadCompiledTemplates: false,
+        shouldDeclareTopLevelNamespaces: false
       }))
       .pipe(plugins.ignore.exclude('*.soy'))
+      .pipe(plugins.wrapper({
+        header: '/* jshint ignore:start */\n' +
+          'import ComponentRegistry from \'' + registryModulePath + '\';\n' +
+          'var Templates = ComponentRegistry.Templates;\n',
+        footer: '/* jshint ignore:end */\n'
+      }))
       .pipe(gulp.dest('src'));
   });
 
