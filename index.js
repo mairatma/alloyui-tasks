@@ -89,12 +89,16 @@ module.exports = function(options) {
 
   gulp.task('soy', function() {
     return gulp.src('src/*.soy')
-      .pipe(plugins.soynode())
-      .pipe(plugins.wrapper({
-        header: '/* jshint ignore:start */',
-        footer: 'export default templates;\n/* jshint ignore:end */'
+      .pipe(plugins.soynode({
+        loadCompiledTemplates: false,
+        shouldDeclareTopLevelNamespaces: false
       }))
       .pipe(plugins.ignore.exclude('*.soy'))
+      .pipe(plugins.wrapper({
+        header: '/* jshint ignore:start */\n' +
+          'import Templates from \'aui/component/Templates\';\n',
+        footer: '/* jshint ignore:end */\n'
+      }))
       .pipe(gulp.dest('src'));
   });
 
