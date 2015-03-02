@@ -37,6 +37,8 @@
     "jshint-stylish": "^1.0.0",
     "jspm": "^0.13.4",
     "karma": "^0.12.31",
+    "karma-ievms": "0.0.4",
+    "karma-sauce-launcher": "^0.2.10"
     "merge": "^1.2.0",
     "open": "0.0.5",
     "run-sequence": "^1.0.2"
