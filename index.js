@@ -36,8 +36,7 @@ module.exports = function(options) {
       .pipe(renamer({
         basePath: process.cwd(),
         configPath: path.resolve('config.js')
-      }))
-      .on('error', handleError)
+      })).on('error', handleError)
       .pipe(transpile({
         basePath: process.cwd(),
         bundleFileName: bundleFileName,
@@ -45,6 +44,7 @@ module.exports = function(options) {
           globalName: 'aui'
         })
       }))
+      .pipe(to5()).on('error', handleError)
       .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest('build'));
   });
