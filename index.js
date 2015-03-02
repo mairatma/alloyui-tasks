@@ -17,7 +17,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var to5 = require('gulp-6to5');
 var transpile = require('gulp-es6-module-transpiler');
 
-function handleError(argument) {
+function handleError(error) {
   console.error(error.toString());
 
   this.emit('end');
