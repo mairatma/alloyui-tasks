@@ -17,6 +17,12 @@ var sourcemaps = require('gulp-sourcemaps');
 var to5 = require('gulp-6to5');
 var transpile = require('gulp-es6-module-transpiler');
 
+function handleError(argument) {
+  console.error(error.toString());
+
+  this.emit('end');
+}
+
 module.exports = function(options) {
   var bundleFileName = options.bundleFileName;
 
@@ -31,6 +37,7 @@ module.exports = function(options) {
         basePath: process.cwd(),
         configPath: path.resolve('config.js')
       }))
+      .on('error', handleError)
       .pipe(transpile({
         basePath: process.cwd(),
         bundleFileName: bundleFileName,
