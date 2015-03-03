@@ -107,7 +107,7 @@ module.exports = function(options) {
   });
 
   gulp.task('test', function(done) {
-    return runSequence('test:unit', 'test:complexity', done);
+    return runSequence('test:unit', /*'test:complexity', TODO(edu): ES6.*/ done);
   });
 
   gulp.task('test:complexity', function() {
