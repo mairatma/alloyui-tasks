@@ -184,6 +184,7 @@ module.exports = function(options) {
             startConnect: true,
             connectOptions: {
                 port: 5757,
+                'selenium-version': '2.41.0',
                 logfile: 'sauce_connect.log'
             }
         }
