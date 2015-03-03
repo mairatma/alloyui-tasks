@@ -8,6 +8,7 @@ var jspm = require('jspm');
 var jspmCore = require('jspm/lib/core');
 var karma = require('karma').server;
 var merge = require('merge');
+var open = require('open');
 var path = require('path');
 var plugins = require('gulp-load-plugins')();
 var renamer = require('gulp-es6-imports-renamer');
