@@ -44,7 +44,9 @@ module.exports = function(options) {
           globalName: 'aui'
         })
       }))
-      .pipe(to5()).on('error', handleError)
+      .pipe(to5({
+        blacklist: 'useStrict'
+      })).on('error', handleError)
       .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest('build'));
   });
