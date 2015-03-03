@@ -176,7 +176,7 @@ module.exports = function(options) {
         captureTimeout: 240000,
         customLaunchers: launchers,
 
-        reporters: ['coverage', 'junit', 'progress', 'saucelabs'],
+        reporters: ['coverage', 'progress', 'saucelabs'],
 
         sauceLabs: {
             testName: 'AlloyUI tests',
