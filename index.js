@@ -8,7 +8,6 @@ var jspm = require('jspm');
 var jspmCore = require('jspm/lib/core');
 var karma = require('karma').server;
 var merge = require('merge');
-var open = require('open');
 var path = require('path');
 var plugins = require('gulp-load-plugins')();
 var renamer = require('gulp-es6-imports-renamer');
@@ -139,55 +138,55 @@ module.exports = function(options) {
   gulp.task('test:saucelabs', ['jspm'], function(done) {
     var launchers = {
       sl_chrome: {
-            base: 'SauceLabs',
-            browserName: 'chrome'
-        },
-        sl_firefox: {
-            base: 'SauceLabs',
-            browserName: 'firefox'
-        },
-        sl_ie_9: {
-            base: 'SauceLabs',
-            browserName: 'internet explorer',
-            platform: 'Windows 7',
-            version: '9'
-        },
-        sl_ie_10: {
-            base: 'SauceLabs',
-            browserName: 'internet explorer',
-            platform: 'Windows 7',
-            version: '10'
-        },
-        sl_ie_11: {
-            base: 'SauceLabs',
-            browserName: 'internet explorer',
-            platform: 'Windows 8.1',
-            version: '11'
-        }
+        base: 'SauceLabs',
+        browserName: 'chrome'
+      },
+      sl_firefox: {
+        base: 'SauceLabs',
+        browserName: 'firefox'
+      },
+      sl_ie_9: {
+        base: 'SauceLabs',
+        browserName: 'internet explorer',
+        platform: 'Windows 7',
+        version: '9'
+      },
+      sl_ie_10: {
+        base: 'SauceLabs',
+        browserName: 'internet explorer',
+        platform: 'Windows 7',
+        version: '10'
+      },
+      sl_ie_11: {
+        base: 'SauceLabs',
+        browserName: 'internet explorer',
+        platform: 'Windows 8.1',
+        version: '11'
+      }
     };
 
     runKarma({
-        browsers: Object.keys(launchers),
+      browsers: Object.keys(launchers),
 
-        browserDisconnectTimeout: 10000,
-        browserDisconnectTolerance: 2,
-        browserNoActivityTimeout: 240000,
+      browserDisconnectTimeout: 10000,
+      browserDisconnectTolerance: 2,
+      browserNoActivityTimeout: 240000,
 
-        captureTimeout: 240000,
-        customLaunchers: launchers,
+      captureTimeout: 240000,
+      customLaunchers: launchers,
 
-        reporters: ['coverage', 'progress', 'saucelabs'],
+      reporters: ['coverage', 'progress', 'saucelabs'],
 
-        sauceLabs: {
-            testName: 'AlloyUI tests',
-            recordScreenshots: false,
-            startConnect: true,
-            connectOptions: {
-                port: 5757,
-                'selenium-version': '2.41.0',
-                logfile: 'sauce_connect.log'
-            }
+      sauceLabs: {
+        testName: 'AlloyUI tests',
+        recordScreenshots: false,
+        startConnect: true,
+        connectOptions: {
+          port: 5757,
+          'selenium-version': '2.41.0',
+          logfile: 'sauce_connect.log'
         }
+      }
     }, done);
   });
 
