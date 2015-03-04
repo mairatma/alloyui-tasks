@@ -14,7 +14,7 @@ var plugins = require('gulp-load-plugins')();
 var renamer = require('gulp-es6-imports-renamer');
 var runSequence = require('run-sequence');
 var sourcemaps = require('gulp-sourcemaps');
-var to5 = require('gulp-6to5');
+var babel = require('gulp-babel');
 var transpile = require('gulp-es6-module-transpiler');
 
 function handleError(error) {
@@ -44,7 +44,7 @@ module.exports = function(options) {
           globalName: 'aui'
         })
       }))
-      .pipe(to5({
+      .pipe(babel({
         blacklist: 'useStrict'
       })).on('error', handleError)
       .pipe(sourcemaps.write('./'))
@@ -113,7 +113,7 @@ module.exports = function(options) {
 
   gulp.task('test:complexity', function() {
     return gulp.src(['src/**/*.js', '!src/**/*.soy.js', '!src/promise/Promise.js', 'test/**/*.js'])
-      .pipe(to5())
+      .pipe(babel())
       .pipe(plugins.complexity({
         halstead: [15, 15, 20]
       }));

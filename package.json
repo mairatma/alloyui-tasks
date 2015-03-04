@@ -19,7 +19,7 @@
     "del": "^1.1.1",
     "es6-module-transpiler-globals-formatter": "^0.1.1",
     "gulp": "^3.8.11",
-    "gulp-6to5": "^3.0.0",
+    "gulp-babel": "^4.0.0",
     "gulp-complexity": "^0.3.0",
     "gulp-es6-imports-renamer": "^0.1.0",
     "gulp-es6-module-transpiler": "git://github.com/mairatma/gulp-es6-module-transpiler#bundle",
