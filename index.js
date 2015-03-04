@@ -45,7 +45,8 @@ module.exports = function(options) {
         })
       }))
       .pipe(babel({
-        blacklist: 'useStrict'
+        blacklist: 'useStrict',
+        compact: false
       })).on('error', handleError)
       .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest('build'));
