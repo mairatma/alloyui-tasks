@@ -216,8 +216,9 @@ module.exports = function(options) {
       reporters: ['coverage', 'progress', 'saucelabs'],
 
       sauceLabs: {
-        testName: 'AlloyUI tests',
-        recordScreenshots: false
+        recordScreenshots: false,
+        startConnect: true,
+        testName: 'AlloyUI tests'
       }
     }, done);
   });
