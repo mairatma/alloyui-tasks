@@ -151,6 +151,10 @@ module.exports = function(options) {
         base: 'SauceLabs',
         browserName: 'chrome'
       },
+      sl_safari: {
+        base: 'SauceLabs',
+        browserName: 'safari'
+      },
       sl_firefox: {
         base: 'SauceLabs',
         browserName: 'firefox'
@@ -172,6 +176,30 @@ module.exports = function(options) {
         browserName: 'internet explorer',
         platform: 'Windows 8.1',
         version: '11'
+      },
+      sl_ios_5_safari: {
+        base: 'SauceLabs',
+        browserName: 'iphone',
+        platform: 'OS X 10.10',
+        version: '5.0'
+      },
+      sl_ios_7_safari: {
+        base: 'SauceLabs',
+        browserName: 'iphone',
+        platform: 'OS X 10.10',
+        version: '7.1'
+      },
+      sl_android_4: {
+        base: 'SauceLabs',
+        browserName: 'android',
+        platform: 'Linux',
+        version: '4.4'
+      },
+      sl_android_5: {
+        base: 'SauceLabs',
+        browserName: 'android',
+        platform: 'Linux',
+        version: '5.0'
       }
     };
 
