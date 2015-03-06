@@ -216,9 +216,14 @@ module.exports = function(options) {
       reporters: ['coverage', 'progress', 'saucelabs'],
 
       sauceLabs: {
+        testName: 'AlloyUI tests',
         recordScreenshots: false,
         startConnect: true,
-        testName: 'AlloyUI tests'
+        connectOptions: {
+          port: 5757,
+          'selenium-version': '2.41.0',
+          logfile: 'sauce_connect.log'
+        }
       }
     }, done);
   });
@@ -255,7 +260,9 @@ function banner(pkg) {
 }
 
 function runKarma(config, done) {
-  karma.start(merge({
-      configFile: path.resolve('karma.conf.js')
-  }, config), done);
+  config = merge({
+    configFile: path.resolve('karma.conf.js'),
+    singleRun: true
+  }, config);
+  karma.start(config, done);
 }
