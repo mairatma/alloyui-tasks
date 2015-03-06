@@ -177,12 +177,6 @@ module.exports = function(options) {
         platform: 'Windows 8.1',
         version: '11'
       },
-      sl_ios_5_safari: {
-        base: 'SauceLabs',
-        browserName: 'iphone',
-        platform: 'OS X 10.10',
-        version: '5.0'
-      },
       sl_ios_7_safari: {
         base: 'SauceLabs',
         browserName: 'iphone',
