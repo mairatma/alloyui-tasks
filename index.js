@@ -254,19 +254,16 @@ function banner(pkg) {
 }
 
 function createComponentSoy(moduleName) {
-  return '\n/**\n* @param? children\n* @param data\n* @param ref\n*/\n' +
+  return '\n/**\n * @param ref\n */\n' +
     '{deltemplate ' + moduleName + '}\n' +
-      '{delcall Component}\n' +
-        '{param children: $children /}\n' +
-        '{param data: $data /}\n' +
-        '{param name: \'' + moduleName + '\' /}\n' +
-        '{param ref: $ref /}\n' +
+      '{delcall Component data="all"}\n' +
+        '{param componentName: \'' + moduleName + '\' /}\n' +
       '{/delcall}\n' +
     '{/deltemplate}\n';
 }
 
 function createSurfaceSoy(moduleName, surfaceName) {
-  return '\n/**\n* @param id\n*/\n' +
+  return '\n/**\n * @param id\n */\n' +
     '{deltemplate ' + moduleName + '.' + surfaceName + '}\n' +
       '<div id="{$id}-' + surfaceName + '">\n' +
         '{if $ij.renderChildComponents}\n' +
