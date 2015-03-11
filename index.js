@@ -17,6 +17,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var babel = require('gulp-babel');
 var through = require('through2');
 var transpile = require('gulp-es6-module-transpiler');
+var tunic = require('tunic');
 
 function handleError(error) {
   console.error(error.toString());
@@ -239,6 +240,14 @@ module.exports = function(options) {
 // Private helpers
 // ===============
 
+function addTemplateParam(filePath, namespace, templateName, param) {
+  var soyJsPath = filePath + '.js';
+  templateName = namespace + '.' + templateName;
+  templateParams[soyJsPath] = templateParams[soyJsPath] || {};
+  templateParams[soyJsPath][templateName] = templateParams[soyJsPath][templateName] || [];
+  templateParams[soyJsPath][templateName].push(param);
+}
+
 function banner(pkg) {
   var stamp = [
     '/**',
@@ -277,27 +286,21 @@ function createSurfaceSoy(moduleName, surfaceName) {
 }
 
 var templateParams = {};
-function extractTemplateParams(namespace, templateCmd, filePath) {
-  var soyJsPath = filePath + '.js';
-  templateParams[soyJsPath] = templateParams[soyJsPath] || {};
-
-  var templateName = namespace + '.' + templateCmd.name;
-  templateParams[soyJsPath][templateName] = [];
-
+function extractTemplateParams(namespace, templateName, templateString, filePath) {
   var paramRegex = /{@param \s*(\S*)\s*:(.*)}/g;
-  var currentMatch = paramRegex.exec(templateCmd.contents);
+  var currentMatch = paramRegex.exec(templateString);
   while (currentMatch) {
-    templateParams[soyJsPath][templateName].push(currentMatch[1]);
-    currentMatch = paramRegex.exec(templateCmd.contents);
+    addTemplateParam(filePath, namespace, templateName, currentMatch[1]);
+    currentMatch = paramRegex.exec(templateString);
   }
 }
 
-function generateDelTemplate(namespace, templateCmd) {
+function generateDelTemplate(namespace, templateName) {
   var moduleName = namespace.substr(10);
-  if (templateCmd.name === 'element') {
+  if (templateName === 'element') {
     return createComponentSoy(moduleName);
   } else {
-    return createSurfaceSoy(moduleName, templateCmd.name);
+    return createSurfaceSoy(moduleName, templateName);
   }
 }
 
@@ -308,16 +311,40 @@ function generateTemplatesAndExtractParams() {
       '// Please don\'t edit them by hand.\n';
 
     var namespace = /{namespace (.*)}/.exec(fileString)[1];
-    var templateCmds = getAllTemplateCmds(fileString);
-    for (var i = 0; i < templateCmds.length; i++) {
-      fileString += generateDelTemplate(namespace, templateCmds[i]);
-      extractTemplateParams(namespace, templateCmds[i], file.relative);
-    }
+
+    var templateCmds = getAllTemplateCmds(file.contents);
+    templateCmds.forEach(function(cmd) {
+      fileString += generateDelTemplate(namespace, cmd.name);
+      extractTemplateParams(namespace, cmd.name, cmd.contents, file.relative);
+
+      cmd.docTags.forEach(function(tag) {
+        if (tag.tag === 'param' && tag.name !== '?') {
+          addTemplateParam(file.relative, namespace, cmd.name, tag.name);
+        }
+      });
+    })
 
     file.contents = new Buffer(fileString);
     this.push(file);
     callback();
   });
+}
+
+function getAllTemplateCmds(contents) {
+  var cmds = [];
+  var ast = tunic().parse(contents);
+  ast.blocks.forEach(function(block, index) {
+    var code = ast.blocks[index + 1];
+    if (block.type === 'Comment' && code && code.type === 'Code') {
+      cmds.push({
+        contents: code.contents,
+        docTags: block.tags,
+        name: getTemplateName(code.contents)
+      });
+    }
+  });
+
+  return cmds;
 }
 
 function getFooterContent(file) {
@@ -336,19 +363,10 @@ function getHeaderContent(corePathFromSoy) {
     'var Templates = ComponentRegistry.Templates;\n';
 }
 
-function getAllTemplateCmds(fileString) {
-  var cmds = [];
-  var regex = /{template (.*)}/g;
-  var match = regex.exec(fileString);
-  while (match) {
-    var endIndex = fileString.indexOf('{/template}', match.index);
-    cmds.push({
-      contents: fileString.substring(match.index, endIndex),
-      name: match[1].substr(1)
-    });
-    match = regex.exec(fileString);
-  }
-  return cmds;
+function getTemplateName(templateString) {
+  var regex = /{template (.*)}/;
+  var match = regex.exec(templateString);
+  return match[1].substr(1);
 }
 
 function runKarma(config, done) {
