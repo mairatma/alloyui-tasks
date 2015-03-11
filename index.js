@@ -61,6 +61,9 @@ module.exports = function(options) {
         path.basename += '-min';
       }))
       .pipe(plugins.uglify({
+        compress: {
+          drop_console: true
+        },
         preserveComments: 'some'
       }))
       .pipe(banner(options.pkg))
