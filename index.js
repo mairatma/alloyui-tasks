@@ -336,11 +336,14 @@ function getAllTemplateCmds(contents) {
   ast.blocks.forEach(function(block, index) {
     var code = ast.blocks[index + 1];
     if (block.type === 'Comment' && code && code.type === 'Code') {
-      cmds.push({
-        contents: code.contents,
-        docTags: block.tags,
-        name: getTemplateName(code.contents)
-      });
+      var templateName = getTemplateName(code.contents);
+      if (templateName) {
+        cmds.push({
+          contents: code.contents,
+          docTags: block.tags,
+          name: templateName
+        });
+      }
     }
   });
 
@@ -366,7 +369,7 @@ function getHeaderContent(corePathFromSoy) {
 function getTemplateName(templateString) {
   var regex = /{template (.*)}/;
   var match = regex.exec(templateString);
-  return match[1].substr(1);
+  return match ? match[1].substr(1) : null;
 }
 
 function runKarma(config, done) {
