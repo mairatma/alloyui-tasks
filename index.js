@@ -274,6 +274,17 @@ function createComponentSoy(moduleName) {
     '{/deltemplate}\n';
 }
 
+function createComponentTemplateSoy(moduleName) {
+  return '\n/**\n */\n' +
+    '{deltemplate ComponentTemplate variant="\'' + moduleName + '\'"}\n' +
+    '{delcall ComponentElement data="all" variant="\'' + moduleName + '\'"}\n' +
+      '{param contents kind="html"}\n' +
+        '{call Templates.' + moduleName + '.element data="all" /}\n' +
+      '{/param}\n' +
+    '{/delcall}\n' +
+  '{/deltemplate}\n';
+}
+
 function createSurfaceSoy(moduleName, surfaceName) {
   return '\n/**\n * @param id\n */\n' +
     '{deltemplate ' + moduleName + '.' + surfaceName + '}\n' +
@@ -298,7 +309,7 @@ function extractTemplateParams(namespace, templateName, templateString, filePath
 function generateDelTemplate(namespace, templateName) {
   var moduleName = namespace.substr(10);
   if (templateName === 'element') {
-    return createComponentSoy(moduleName);
+    return createComponentSoy(moduleName) + createComponentTemplateSoy(moduleName);
   } else {
     return createSurfaceSoy(moduleName, templateName);
   }
