@@ -28,13 +28,14 @@ function handleError(error) {
 module.exports = function(options) {
   var bundleFileName = options.bundleFileName;
   var corePathFromSoy = options.corePathFromSoy || 'aui';
+  var taskPrefix = options.taskPrefix || '';
   var shouldSkipSoyTemplatesGeneration = options.shouldSkipSoyTemplatesGeneration;
 
-  gulp.task('build', function(done) {
-    runSequence('clean', ['soy', 'copy'], ['build:globals', 'build:min'], done);
+  gulp.task(taskPrefix + 'build', function(done) {
+    runSequence('clean', [taskPrefix + 'soy', taskPrefix + 'copy'], [taskPrefix + 'build:globals', taskPrefix + 'build:min'], done);
   });
 
-  gulp.task('build:globals', ['jspm'], function() {
+  gulp.task(taskPrefix + 'build:globals', [taskPrefix + 'jspm'], function() {
     return gulp.src('src/**/*.js')
       .pipe(sourcemaps.init())
       .pipe(renamer({
@@ -56,7 +57,7 @@ module.exports = function(options) {
       .pipe(gulp.dest('build'));
   });
 
-  gulp.task('build:min', ['build:globals'], function() {
+  gulp.task(taskPrefix + 'build:min', [taskPrefix + 'build:globals'], function() {
     return gulp.src(path.join('build/', bundleFileName))
       .pipe(plugins.rename(function(path) {
         path.basename += '-min';
@@ -71,16 +72,16 @@ module.exports = function(options) {
       .pipe(gulp.dest('build'));
   });
 
-  gulp.task('clean', function(done) {
+  gulp.task(taskPrefix + 'clean', function(done) {
     del(['build'], done);
   });
 
-  gulp.task('copy', function() {
+  gulp.task(taskPrefix + 'copy', function() {
     return gulp.src('src/**/*.css')
       .pipe(gulp.dest('build'));
   });
 
-  gulp.task('jspm', function(done) {
+  gulp.task(taskPrefix + 'jspm', function(done) {
     jspm.promptDefaults(true);
     jspm.install(true, {
       lock: true
@@ -98,13 +99,13 @@ module.exports = function(options) {
     });
   });
 
-  gulp.task('lint', function() {
+  gulp.task(taskPrefix + 'lint', function() {
     return gulp.src(['src/**/*.js', 'test/**/*.js'])
       .pipe(plugins.jshint())
       .pipe(plugins.jshint.reporter(require('jshint-stylish')));
   });
 
-  gulp.task('soy', function() {
+  gulp.task(taskPrefix + 'soy', function() {
     return gulp.src('src/**/*.soy')
       .pipe(plugins.if(!shouldSkipSoyTemplatesGeneration, generateTemplatesAndExtractParams()))
       .pipe(plugins.if(!shouldSkipSoyTemplatesGeneration, gulp.dest('build')))
@@ -120,11 +121,11 @@ module.exports = function(options) {
       .pipe(gulp.dest('src'));
   });
 
-  gulp.task('test', function(done) {
-    return runSequence('test:unit', /*'test:complexity', TODO(edu): ES6.*/ done);
+  gulp.task(taskPrefix + 'test', function(done) {
+    return runSequence(taskPrefix + 'test:unit', /*'test:complexity', TODO(edu): ES6.*/ done);
   });
 
-  gulp.task('test:complexity', function() {
+  gulp.task(taskPrefix + 'test:complexity', function() {
     return gulp.src(['src/**/*.js', '!src/**/*.soy.js', '!src/promise/Promise.js', 'test/**/*.js'])
       .pipe(babel())
       .pipe(plugins.complexity({
@@ -132,24 +133,24 @@ module.exports = function(options) {
       }));
   });
 
-  gulp.task('test:unit', ['jspm', 'soy'], function(done) {
+  gulp.task(taskPrefix + 'test:unit', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
     runKarma({}, done);
   });
 
-  gulp.task('test:coverage', ['jspm', 'soy'], function(done) {
+  gulp.task(taskPrefix + 'test:coverage', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
     runKarma({}, function() {
       open(path.resolve('coverage/lcov/lcov-report/index.html'));
       done();
     });
   });
 
-  gulp.task('test:browsers', ['jspm', 'soy'], function(done) {
+  gulp.task(taskPrefix + 'test:browsers', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
     runKarma({
       browsers: ['Chrome', 'Firefox', 'Safari', 'IE9 - Win7', 'IE10 - Win7', 'IE11 - Win7']
     }, done);
   });
 
-  gulp.task('test:saucelabs', ['jspm', 'soy'], function(done) {
+  gulp.task(taskPrefix + 'test:saucelabs', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
     var launchers = {
       sl_chrome: {
         base: 'SauceLabs',
@@ -226,15 +227,15 @@ module.exports = function(options) {
     }, done);
   });
 
-  gulp.task('test:watch', ['jspm', 'soy'], function(done) {
-    gulp.watch('src/**/*.soy', ['soy']);
+  gulp.task(taskPrefix + 'test:watch', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
+    gulp.watch('src/**/*.soy', [taskPrefix + 'soy']);
 
     runKarma({
       singleRun: false
     }, done);
   });
 
-  gulp.task('watch', ['build'], function() {
+  gulp.task(taskPrefix + 'watch', [taskPrefix + 'build'], function() {
     gulp.watch('src/**/*', ['build']);
   });
 };
