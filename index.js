@@ -28,15 +28,23 @@ function handleError(error) {
 module.exports = function(options) {
   var bundleFileName = options.bundleFileName;
   var corePathFromSoy = options.corePathFromSoy || 'aui';
-  var taskPrefix = options.taskPrefix || '';
   var shouldSkipSoyTemplatesGeneration = options.shouldSkipSoyTemplatesGeneration;
+  var taskPrefix = options.taskPrefix || '';
+  var buildDest = options.buildDest || 'build';
+  var buildSrc = options.buildSrc || 'src/**/*.js';
+  var cssSrc = options.cssSrc || 'src/**/*.css';
+  var testSrc = options.testSrc || 'test/**/*.js';
+  var lintSrc = options.lintSrc || [buildSrc, testSrc];
+  var soyDest = options.soyDest || 'src';
+  var soySrc = options.soySrc || 'src/**/*.soy';
+  var watchSrc = options.watchSrc || 'src/**/*';
 
   gulp.task(taskPrefix + 'build', function(done) {
     runSequence('clean', [taskPrefix + 'soy', taskPrefix + 'copy'], [taskPrefix + 'build:globals', taskPrefix + 'build:min'], done);
   });
 
   gulp.task(taskPrefix + 'build:globals', [taskPrefix + 'jspm'], function() {
-    return gulp.src('src/**/*.js')
+    return gulp.src(buildSrc)
       .pipe(sourcemaps.init())
       .pipe(renamer({
         basePath: process.cwd(),
@@ -54,11 +62,11 @@ module.exports = function(options) {
         compact: false
       })).on('error', handleError)
       .pipe(sourcemaps.write('./'))
-      .pipe(gulp.dest('build'));
+      .pipe(gulp.dest(buildDest));
   });
 
   gulp.task(taskPrefix + 'build:min', [taskPrefix + 'build:globals'], function() {
-    return gulp.src(path.join('build/', bundleFileName))
+    return gulp.src(path.join(buildDest, bundleFileName))
       .pipe(plugins.rename(function(path) {
         path.basename += '-min';
       }))
@@ -69,7 +77,7 @@ module.exports = function(options) {
         preserveComments: 'some'
       }))
       .pipe(banner(options.pkg))
-      .pipe(gulp.dest('build'));
+      .pipe(gulp.dest(buildDest));
   });
 
   gulp.task(taskPrefix + 'clean', function(done) {
@@ -77,8 +85,8 @@ module.exports = function(options) {
   });
 
   gulp.task(taskPrefix + 'copy', function() {
-    return gulp.src('src/**/*.css')
-      .pipe(gulp.dest('build'));
+    return gulp.src(cssSrc)
+      .pipe(gulp.dest(buildDest));
   });
 
   gulp.task(taskPrefix + 'jspm', function(done) {
@@ -100,15 +108,15 @@ module.exports = function(options) {
   });
 
   gulp.task(taskPrefix + 'lint', function() {
-    return gulp.src(['src/**/*.js', 'test/**/*.js'])
+    return gulp.src(lintSrc)
       .pipe(plugins.jshint())
       .pipe(plugins.jshint.reporter(require('jshint-stylish')));
   });
 
   gulp.task(taskPrefix + 'soy', function() {
-    return gulp.src('src/**/*.soy')
+    return gulp.src(soySrc)
       .pipe(plugins.if(!shouldSkipSoyTemplatesGeneration, generateTemplatesAndExtractParams()))
-      .pipe(plugins.if(!shouldSkipSoyTemplatesGeneration, gulp.dest('build')))
+      .pipe(plugins.if(!shouldSkipSoyTemplatesGeneration, gulp.dest(buildDest)))
       .pipe(plugins.soynode({
         loadCompiledTemplates: false,
         shouldDeclareTopLevelNamespaces: false
@@ -118,19 +126,11 @@ module.exports = function(options) {
         header: getHeaderContent(corePathFromSoy),
         footer: getFooterContent
       }))
-      .pipe(gulp.dest('src'));
+      .pipe(gulp.dest(soyDest));
   });
 
   gulp.task(taskPrefix + 'test', function(done) {
-    return runSequence(taskPrefix + 'test:unit', /*'test:complexity', TODO(edu): ES6.*/ done);
-  });
-
-  gulp.task(taskPrefix + 'test:complexity', function() {
-    return gulp.src(['src/**/*.js', '!src/**/*.soy.js', '!src/promise/Promise.js', 'test/**/*.js'])
-      .pipe(babel())
-      .pipe(plugins.complexity({
-        halstead: [15, 15, 20]
-      }));
+    return runSequence(taskPrefix + 'test:unit', done);
   });
 
   gulp.task(taskPrefix + 'test:unit', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
@@ -228,7 +228,7 @@ module.exports = function(options) {
   });
 
   gulp.task(taskPrefix + 'test:watch', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
-    gulp.watch('src/**/*.soy', [taskPrefix + 'soy']);
+    gulp.watch(soySrc, [taskPrefix + 'soy']);
 
     runKarma({
       singleRun: false
@@ -236,7 +236,7 @@ module.exports = function(options) {
   });
 
   gulp.task(taskPrefix + 'watch', [taskPrefix + 'build'], function() {
-    gulp.watch('src/**/*', ['build']);
+    gulp.watch(watchSrc, ['build']);
   });
 };
 
