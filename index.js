@@ -132,24 +132,24 @@ module.exports = function(options) {
       }));
   });
 
-  gulp.task('test:unit', ['jspm'], function(done) {
+  gulp.task('test:unit', ['jspm', 'soy'], function(done) {
     runKarma({}, done);
   });
 
-  gulp.task('test:coverage', ['jspm'], function(done) {
+  gulp.task('test:coverage', ['jspm', 'soy'], function(done) {
     runKarma({}, function() {
       open(path.resolve('coverage/lcov/lcov-report/index.html'));
       done();
     });
   });
 
-  gulp.task('test:browsers', ['jspm'], function(done) {
+  gulp.task('test:browsers', ['jspm', 'soy'], function(done) {
     runKarma({
       browsers: ['Chrome', 'Firefox', 'Safari', 'IE9 - Win7', 'IE10 - Win7', 'IE11 - Win7']
     }, done);
   });
 
-  gulp.task('test:saucelabs', ['jspm'], function(done) {
+  gulp.task('test:saucelabs', ['jspm', 'soy'], function(done) {
     var launchers = {
       sl_chrome: {
         base: 'SauceLabs',
@@ -226,7 +226,7 @@ module.exports = function(options) {
     }, done);
   });
 
-  gulp.task('test:watch', ['jspm'], function(done) {
+  gulp.task('test:watch', ['jspm', 'soy'], function(done) {
     runKarma({
       singleRun: false
     }, done);
