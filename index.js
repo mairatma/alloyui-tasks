@@ -227,6 +227,8 @@ module.exports = function(options) {
   });
 
   gulp.task('test:watch', ['jspm', 'soy'], function(done) {
+    gulp.watch('src/**/*.soy', ['soy']);
+
     runKarma({
       singleRun: false
     }, done);
