@@ -265,8 +265,18 @@ function banner(pkg) {
   });
 }
 
+function createComponentElementSoy(moduleName, hasElementTemplate) {
+  if (!hasElementTemplate) {
+    return '';
+  }
+  return '\n/**\n */\n' +
+    '{deltemplate ComponentElement variant="\'' + moduleName + '\'"}\n' +
+      '{call .contentElement data="all" /}\n' +
+    '{/deltemplate}\n';
+}
+
 function createComponentSoy(moduleName) {
-  return '\n/**\n * @param ref\n */\n' +
+  return '\n/**\n * @param id\n */\n' +
     '{deltemplate ' + moduleName + '}\n' +
       '{delcall Component data="all"}\n' +
         '{param componentName: \'' + moduleName + '\' /}\n' +
@@ -278,21 +288,36 @@ function createComponentTemplateSoy(moduleName) {
   return '\n/**\n */\n' +
     '{deltemplate ComponentTemplate variant="\'' + moduleName + '\'"}\n' +
     '{delcall ComponentElement data="all" variant="\'' + moduleName + '\'"}\n' +
-      '{param contents kind="html"}\n' +
-        '{call Templates.' + moduleName + '.element data="all" /}\n' +
+      '{param elementContent kind="html"}\n' +
+        '{call .content data="all" /}\n' +
       '{/param}\n' +
     '{/delcall}\n' +
   '{/deltemplate}\n';
 }
 
+function createSurfaceElementSoy(moduleName, surfaceName, hasElementTemplate) {
+  if (!hasElementTemplate) {
+    return '\n/**\n * @param? elementContent\n * @param id\n */\n' +
+      '{template .' + surfaceName + 'Element}\n' +
+        '<div id="{$id}-' + surfaceName + '">\n' +
+          '{if $elementContent}\n' +
+            '{$elementContent}\n' +
+          '{/if}\n' +
+        '</div>\n' +
+      '{/template}\n';
+  }
+}
+
 function createSurfaceSoy(moduleName, surfaceName) {
-  return '\n/**\n * @param id\n */\n' +
+  return '\n/**\n */\n' +
     '{deltemplate ' + moduleName + '.' + surfaceName + '}\n' +
-      '<div id="{$id}-' + surfaceName + '">\n' +
-        '{if $ij.renderChildComponents}\n' +
-            '{call .' + surfaceName + ' data="all" /}\n' +
-        '{/if}\n' +
-      '</div>\n' +
+      '{call .' + surfaceName + 'Element data="all"}\n' +
+        '{param elementContent kind="html"}\n' +
+          '{if $ij.renderChildComponents}\n' +
+              '{call .' + surfaceName + ' data="all" /}\n' +
+          '{/if}\n' +
+        '{/param}\n' +
+      '{/call}\n' +
     '{/deltemplate}\n';
 }
 
@@ -306,12 +331,16 @@ function extractTemplateParams(namespace, templateName, templateString, filePath
   }
 }
 
-function generateDelTemplate(namespace, templateName) {
+function generateDelTemplate(namespace, templateName, hasElementTemplate) {
   var moduleName = namespace.substr(10);
-  if (templateName === 'element') {
-    return createComponentSoy(moduleName) + createComponentTemplateSoy(moduleName);
+  if (templateName.substr(templateName.length - 7) === 'Element') {
+    return '';
+  } else if (templateName === 'content') {
+    return createComponentSoy(moduleName) + createComponentTemplateSoy(moduleName) +
+      createComponentElementSoy(moduleName, hasElementTemplate);
   } else {
-    return createSurfaceSoy(moduleName, templateName);
+    return createSurfaceElementSoy(moduleName, templateName, hasElementTemplate) +
+      createSurfaceSoy(moduleName, templateName);
   }
 }
 
@@ -324,8 +353,10 @@ function generateTemplatesAndExtractParams() {
     var namespace = /{namespace (.*)}/.exec(fileString)[1];
 
     var templateCmds = getAllTemplateCmds(file.contents);
+    var hasElementTemplateMap = getHasElementTemplateMap(templateCmds);
+
     templateCmds.forEach(function(cmd) {
-      fileString += generateDelTemplate(namespace, cmd.name);
+      fileString += generateDelTemplate(namespace, cmd.name, hasElementTemplateMap[cmd.name]);
       extractTemplateParams(namespace, cmd.name, cmd.contents, file.relative);
 
       cmd.docTags.forEach(function(tag) {
@@ -368,6 +399,17 @@ function getFooterContent(file) {
     footer += '\n' + templateName + '.params = ' + JSON.stringify(fileParams[templateName]) + ';';
   }
   return footer + '\n/* jshint ignore:end */\n';
+}
+
+function getHasElementTemplateMap(templateCmds) {
+  var hasElementTemplateMap = {};
+  templateCmds.forEach(function(cmd) {
+    var templateParts = cmd.name.split('Element');
+    if (templateParts[1] === '') {
+      hasElementTemplateMap[templateParts[0]] = true;
+    }
+  });
+  return hasElementTemplateMap;
 }
 
 function getHeaderContent(corePathFromSoy) {
