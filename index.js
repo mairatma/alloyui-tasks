@@ -32,19 +32,16 @@ module.exports = function(options) {
   var taskPrefix = options.taskPrefix || '';
   var buildDest = options.buildDest || 'build';
   var buildSrc = options.buildSrc || 'src/**/*.js';
-  var cssSrc = options.cssSrc || 'src/**/*.css';
-  var testSrc = options.testSrc || 'test/**/*.js';
   var jspmConfigFile = options.jspmConfigFile || 'config.js';
-  var lintSrc = options.lintSrc || [buildSrc, testSrc];
   var soyDest = options.soyDest || 'src';
   var soySrc = options.soySrc || 'src/**/*.soy';
-  var watchSrc = options.watchSrc || 'src/**/*';
+  var globalName = options.globalName || 'aui';
 
   gulp.task(taskPrefix + 'build', function(done) {
-    runSequence('clean', [taskPrefix + 'soy', taskPrefix + 'copy'], [taskPrefix + 'build:globals', taskPrefix + 'build:min'], done);
+    runSequence([taskPrefix + 'soy'], [taskPrefix + 'build:globals'], done);
   });
 
-  gulp.task(taskPrefix + 'build:globals', [taskPrefix + 'jspm'], function() {
+  gulp.task(taskPrefix + 'build:globals', function() {
     return gulp.src(buildSrc)
       .pipe(sourcemaps.init())
       .pipe(renamer({
@@ -55,7 +52,7 @@ module.exports = function(options) {
         basePath: process.cwd(),
         bundleFileName: bundleFileName,
         formatter: new GlobalsFormatter({
-          globalName: 'aui'
+          globalName: globalName
         })
       }))
       .pipe(babel({
@@ -63,30 +60,6 @@ module.exports = function(options) {
         compact: false
       })).on('error', handleError)
       .pipe(sourcemaps.write('./'))
-      .pipe(gulp.dest(buildDest));
-  });
-
-  gulp.task(taskPrefix + 'build:min', [taskPrefix + 'build:globals'], function() {
-    return gulp.src(path.join(buildDest, bundleFileName))
-      .pipe(plugins.rename(function(path) {
-        path.basename += '-min';
-      }))
-      .pipe(plugins.uglify({
-        compress: {
-          drop_console: true
-        },
-        preserveComments: 'some'
-      }))
-      .pipe(banner(options.pkg))
-      .pipe(gulp.dest(buildDest));
-  });
-
-  gulp.task(taskPrefix + 'clean', function(done) {
-    del(['build'], done);
-  });
-
-  gulp.task(taskPrefix + 'copy', function() {
-    return gulp.src(cssSrc)
       .pipe(gulp.dest(buildDest));
   });
 
@@ -106,12 +79,6 @@ module.exports = function(options) {
       gutil.log(gutil.colors.red('Installation changes not saved.'));
       done();
     });
-  });
-
-  gulp.task(taskPrefix + 'lint', function() {
-    return gulp.src(lintSrc)
-      .pipe(plugins.jshint())
-      .pipe(plugins.jshint.reporter(require('jshint-stylish')));
   });
 
   gulp.task(taskPrefix + 'soy', function() {
@@ -134,24 +101,24 @@ module.exports = function(options) {
     return runSequence(taskPrefix + 'test:unit', done);
   });
 
-  gulp.task(taskPrefix + 'test:unit', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
+  gulp.task(taskPrefix + 'test:unit', [taskPrefix + 'soy'], function(done) {
     runKarma({}, done);
   });
 
-  gulp.task(taskPrefix + 'test:coverage', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
+  gulp.task(taskPrefix + 'test:coverage', [taskPrefix + 'soy'], function(done) {
     runKarma({}, function() {
       open(path.resolve('coverage/lcov/lcov-report/index.html'));
       done();
     });
   });
 
-  gulp.task(taskPrefix + 'test:browsers', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
+  gulp.task(taskPrefix + 'test:browsers', [taskPrefix + 'soy'], function(done) {
     runKarma({
       browsers: ['Chrome', 'Firefox', 'Safari', 'IE9 - Win7', 'IE10 - Win7', 'IE11 - Win7']
     }, done);
   });
 
-  gulp.task(taskPrefix + 'test:saucelabs', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
+  gulp.task(taskPrefix + 'test:saucelabs', [taskPrefix + 'soy'], function(done) {
     var launchers = {
       sl_chrome: {
         base: 'SauceLabs',
@@ -228,16 +195,12 @@ module.exports = function(options) {
     }, done);
   });
 
-  gulp.task(taskPrefix + 'test:watch', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
+  gulp.task(taskPrefix + 'test:watch', [taskPrefix + 'soy'], function(done) {
     gulp.watch(soySrc, [taskPrefix + 'soy']);
 
     runKarma({
       singleRun: false
     }, done);
-  });
-
-  gulp.task(taskPrefix + 'watch', [taskPrefix + 'build'], function() {
-    gulp.watch(watchSrc, ['build']);
   });
 };
 
@@ -250,23 +213,6 @@ function addTemplateParam(filePath, namespace, templateName, param) {
   templateParams[soyJsPath] = templateParams[soyJsPath] || {};
   templateParams[soyJsPath][templateName] = templateParams[soyJsPath][templateName] || [];
   templateParams[soyJsPath][templateName].push(param);
-}
-
-function banner(pkg) {
-  var stamp = [
-    '/**',
-    ' * <%= pkg.name %> - <%= pkg.description %>',
-    ' * @version v<%= pkg.version %>',
-    ' * @author <%= pkg.author.name %> <<%= pkg.author.email %>>',
-    ' * @link http://liferay.com',
-    ' * @license BSD',
-    ' */',
-    ''
-  ].join('\n');
-
-  return plugins.header(stamp, {
-    pkg: pkg
-  });
 }
 
 function createComponentElementSoy(moduleName, hasElementTemplate) {
@@ -368,7 +314,7 @@ function generateTemplatesAndExtractParams() {
           addTemplateParam(file.relative, namespace, cmd.name, tag.name);
         }
       });
-    })
+    });
 
     file.contents = new Buffer(fileString);
     this.push(file);
