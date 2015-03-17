@@ -37,11 +37,7 @@ module.exports = function(options) {
   var soySrc = options.soySrc || 'src/**/*.soy';
   var globalName = options.globalName || 'aui';
 
-  gulp.task(taskPrefix + 'build', function(done) {
-    runSequence([taskPrefix + 'soy'], [taskPrefix + 'build:globals'], done);
-  });
-
-  gulp.task(taskPrefix + 'build:globals', function() {
+  gulp.task(taskPrefix + 'build:globals', [taskPrefix + 'soy'], function() {
     return gulp.src(buildSrc)
       .pipe(sourcemaps.init())
       .pipe(renamer({
