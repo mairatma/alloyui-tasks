@@ -34,6 +34,7 @@ module.exports = function(options) {
   var buildSrc = options.buildSrc || 'src/**/*.js';
   var cssSrc = options.cssSrc || 'src/**/*.css';
   var testSrc = options.testSrc || 'test/**/*.js';
+  var jspmConfigFile = options.jspmConfigFile || 'config.js';
   var lintSrc = options.lintSrc || [buildSrc, testSrc];
   var soyDest = options.soyDest || 'src';
   var soySrc = options.soySrc || 'src/**/*.soy';
@@ -48,7 +49,7 @@ module.exports = function(options) {
       .pipe(sourcemaps.init())
       .pipe(renamer({
         basePath: process.cwd(),
-        configPath: path.resolve('config.js')
+        configPath: path.resolve(jspmConfigFile)
       })).on('error', handleError)
       .pipe(transpile({
         basePath: process.cwd(),
