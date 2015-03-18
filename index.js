@@ -114,7 +114,7 @@ module.exports = function(options) {
     }, done);
   });
 
-  gulp.task(taskPrefix + 'test:saucelabs', [taskPrefix + 'soy'], function(done) {
+  gulp.task(taskPrefix + 'test:saucelabs', [taskPrefix + 'jspm', taskPrefix + 'soy'], function(done) {
     var launchers = {
       sl_chrome: {
         base: 'SauceLabs',
