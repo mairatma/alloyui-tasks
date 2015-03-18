@@ -261,6 +261,7 @@ function createSurfaceElementSoy(moduleName, surfaceName, hasElementTemplate) {
         '</div>\n' +
       '{/template}\n';
   }
+  return '';
 }
 
 function createSurfaceSoy(moduleName, surfaceName) {
