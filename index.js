@@ -212,13 +212,22 @@ function addTemplateParam(filePath, namespace, templateName, param) {
 }
 
 function createComponentElementSoy(moduleName, hasElementTemplate) {
+  var fileString = '';
   if (!hasElementTemplate) {
-    return '';
+    fileString += '\n/**\n * @param? elementContent\n * @param? elementClasses\n * @param id\n */' +
+      '\n{template .contentElement}\n' +
+        '<div id="{$id}" class="' + moduleName.toLowerCase() + ' {$elementClasses ? $elementClasses : \'\'}" data-component>\n' +
+          '{if $elementContent}\n' +
+              '{$elementContent}\n' +
+          '{/if}\n' +
+        '</div>\n' +
+      '{/template}\n';
   }
-  return '\n/**\n */\n' +
+  fileString += '\n/**\n */\n' +
     '{deltemplate ComponentElement variant="\'' + moduleName + '\'"}\n' +
       '{call .contentElement data="all" /}\n' +
     '{/deltemplate}\n';
+  return fileString;
 }
 
 function createComponentSoy(moduleName) {
