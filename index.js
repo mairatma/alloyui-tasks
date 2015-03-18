@@ -214,24 +214,24 @@ function addTemplateParam(filePath, namespace, templateName, param) {
 function createComponentElementSoy(moduleName, hasElementTemplate) {
   var fileString = '';
   if (!hasElementTemplate) {
-    fileString += '\n/**\n * @param? elementContent\n * @param? elementClasses\n * @param id\n */' +
-      '\n{template .contentElement}\n' +
+    fileString += '\n/**\n * @param? elementContent\n * @param? elementClasses\n * @param id\n */\n' +
+      '{deltemplate ' + moduleName + ' variant="\'element\'"}\n' +
         '<div id="{$id}" class="' + moduleName.toLowerCase() + ' {$elementClasses ? $elementClasses : \'\'}" data-component>\n' +
           '{if $elementContent}\n' +
               '{$elementContent}\n' +
           '{/if}\n' +
         '</div>\n' +
-      '{/template}\n';
+      '{/deltemplate}\n';
   }
   fileString += '\n/**\n */\n' +
     '{deltemplate ComponentElement variant="\'' + moduleName + '\'"}\n' +
-      '{call .contentElement data="all" /}\n' +
+      '{delcall ' + moduleName + ' variant="\'element\'" data="all" /}\n' +
     '{/deltemplate}\n';
   return fileString;
 }
 
 function createComponentSoy(moduleName) {
-  return '\n/**\n * @param id\n */\n' +
+  return '\n/**\n * @param? elementContent\n * @param? elementClasses\n * @param id\n */\n' +
     '{deltemplate ' + moduleName + '}\n' +
       '{delcall Component data="all"}\n' +
         '{param componentName: \'' + moduleName + '\' /}\n' +
@@ -253,27 +253,27 @@ function createComponentTemplateSoy(moduleName) {
 function createSurfaceElementSoy(moduleName, surfaceName, hasElementTemplate) {
   if (!hasElementTemplate) {
     return '\n/**\n * @param? elementContent\n * @param id\n */\n' +
-      '{template .' + surfaceName + 'Element}\n' +
+      '{deltemplate ' + moduleName + '.' + surfaceName + ' variant="\'element\'"}\n' +
         '<div id="{$id}-' + surfaceName + '">\n' +
           '{if $elementContent}\n' +
             '{$elementContent}\n' +
           '{/if}\n' +
         '</div>\n' +
-      '{/template}\n';
+      '{/deltemplate}\n';
   }
   return '';
 }
 
 function createSurfaceSoy(moduleName, surfaceName) {
-  return '\n/**\n */\n' +
+  return '\n/**\n * @param? elementContent\n * @param id\n */\n' +
     '{deltemplate ' + moduleName + '.' + surfaceName + '}\n' +
-      '{call .' + surfaceName + 'Element data="all"}\n' +
+      '{delcall ' + moduleName + '.' + surfaceName + ' variant="\'element\'" data="all"}\n' +
         '{param elementContent kind="html"}\n' +
           '{if $ij.renderChildComponents}\n' +
               '{call .' + surfaceName + ' data="all" /}\n' +
           '{/if}\n' +
         '{/param}\n' +
-      '{/call}\n' +
+      '{/delcall}\n' +
     '{/deltemplate}\n';
 }
 
@@ -289,9 +289,7 @@ function extractTemplateParams(namespace, templateName, templateString, filePath
 
 function generateDelTemplate(namespace, templateName, hasElementTemplate) {
   var moduleName = namespace.substr(10);
-  if (templateName.substr(templateName.length - 7) === 'Element') {
-    return '';
-  } else if (templateName === 'content') {
+  if (templateName === 'content') {
     return createComponentSoy(moduleName) + createComponentTemplateSoy(moduleName) +
       createComponentElementSoy(moduleName, hasElementTemplate);
   } else {
@@ -310,9 +308,15 @@ function generateTemplatesAndExtractParams() {
 
     var templateCmds = getAllTemplateCmds(file.contents);
     var hasElementTemplateMap = getHasElementTemplateMap(templateCmds);
+    var moduleName = namespace.substr(10);
 
     templateCmds.forEach(function(cmd) {
-      fileString += generateDelTemplate(namespace, cmd.name, hasElementTemplateMap[cmd.name]);
+      if (cmd.deltemplate) {
+        return;
+      }
+
+      var fullName = cmd.name === 'content' ? moduleName : moduleName + '.' + cmd.name;
+      fileString += generateDelTemplate(namespace, cmd.name, hasElementTemplateMap[fullName]);
       extractTemplateParams(namespace, cmd.name, cmd.contents, file.relative);
 
       cmd.docTags.forEach(function(tag) {
@@ -334,13 +338,12 @@ function getAllTemplateCmds(contents) {
   ast.blocks.forEach(function(block, index) {
     var code = ast.blocks[index + 1];
     if (block.type === 'Comment' && code && code.type === 'Code') {
-      var templateName = getTemplateName(code.contents);
-      if (templateName) {
-        cmds.push({
+      var templateInfo = getTemplateInfo(code.contents);
+      if (templateInfo) {
+        cmds.push(merge({
           contents: code.contents,
-          docTags: block.tags,
-          name: templateName
-        });
+          docTags: block.tags
+        }, templateInfo));
       }
     }
   });
@@ -360,9 +363,8 @@ function getFooterContent(file) {
 function getHasElementTemplateMap(templateCmds) {
   var hasElementTemplateMap = {};
   templateCmds.forEach(function(cmd) {
-    var templateParts = cmd.name.split('Element');
-    if (templateParts[1] === '') {
-      hasElementTemplateMap[templateParts[0]] = true;
+    if (cmd.deltemplate && cmd.variant === 'element') {
+      hasElementTemplateMap[cmd.name] = true;
     }
   });
   return hasElementTemplateMap;
@@ -375,10 +377,22 @@ function getHeaderContent(corePathFromSoy) {
     'var Templates = ComponentRegistry.Templates;\n';
 }
 
-function getTemplateName(templateString) {
-  var regex = /{template (.*)}/;
-  var match = regex.exec(templateString);
-  return match ? match[1].substr(1) : null;
+function getTemplateInfo(templateString) {
+  var info = {};
+  var match = /{template (.*)}/.exec(templateString);
+  if (match){
+    info.name = match[1].substr(1);
+  } else {
+    var regex = new RegExp('{deltemplate (\\S+)\\s*(variant="\'(\\w+)\'")?\\s*}');
+    match = regex.exec(templateString);
+    if (match) {
+      info.deltemplate = true;
+      info.name = match[1];
+      info.variant = match[3];
+    }
+  }
+
+  return info;
 }
 
 function runKarma(config, done) {
