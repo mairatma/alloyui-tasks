@@ -214,12 +214,10 @@ function addTemplateParam(filePath, namespace, templateName, param) {
 function createComponentElementSoy(moduleName, hasElementTemplate) {
   var fileString = '';
   if (!hasElementTemplate) {
-    fileString += '\n/**\n * @param? elementContent\n * @param? elementClasses\n * @param id\n */\n' +
+    fileString += '\n/**\n * @param elementContent\n * @param? elementClasses\n * @param id\n */\n' +
       '{deltemplate ' + moduleName + ' variant="\'element\'"}\n' +
         '<div id="{$id}" class="' + moduleName.toLowerCase() + ' {$elementClasses ? $elementClasses : \'\'}" data-component>\n' +
-          '{if $elementContent}\n' +
-              '{$elementContent}\n' +
-          '{/if}\n' +
+          '{$elementContent}\n' +
         '</div>\n' +
       '{/deltemplate}\n';
   }
@@ -231,7 +229,7 @@ function createComponentElementSoy(moduleName, hasElementTemplate) {
 }
 
 function createComponentSoy(moduleName) {
-  return '\n/**\n * @param? elementContent\n * @param? elementClasses\n * @param id\n */\n' +
+  return '\n/**\n * @param elementContent\n * @param? elementClasses\n * @param id\n */\n' +
     '{deltemplate ' + moduleName + '}\n' +
       '{delcall Component data="all"}\n' +
         '{param componentName: \'' + moduleName + '\' /}\n' +
@@ -244,7 +242,9 @@ function createComponentTemplateSoy(moduleName) {
     '{deltemplate ComponentTemplate variant="\'' + moduleName + '\'"}\n' +
     '{delcall ComponentElement data="all" variant="\'' + moduleName + '\'"}\n' +
       '{param elementContent kind="html"}\n' +
-        '{call .content data="all" /}\n' +
+        '{if $ij.renderChildComponents}\n' +
+          '{call .content data="all" /}\n' +
+        '{/if}\n' +
       '{/param}\n' +
     '{/delcall}\n' +
   '{/deltemplate}\n';
@@ -252,12 +252,10 @@ function createComponentTemplateSoy(moduleName) {
 
 function createSurfaceElementSoy(moduleName, surfaceName, hasElementTemplate) {
   if (!hasElementTemplate) {
-    return '\n/**\n * @param? elementContent\n * @param id\n */\n' +
+    return '\n/**\n * @param elementContent\n * @param id\n */\n' +
       '{deltemplate ' + moduleName + '.' + surfaceName + ' variant="\'element\'"}\n' +
         '<div id="{$id}-' + surfaceName + '">\n' +
-          '{if $elementContent}\n' +
-            '{$elementContent}\n' +
-          '{/if}\n' +
+          '{$elementContent}\n' +
         '</div>\n' +
       '{/deltemplate}\n';
   }
@@ -265,7 +263,7 @@ function createSurfaceElementSoy(moduleName, surfaceName, hasElementTemplate) {
 }
 
 function createSurfaceSoy(moduleName, surfaceName) {
-  return '\n/**\n * @param? elementContent\n * @param id\n */\n' +
+  return '\n/**\n * @param elementContent\n * @param id\n */\n' +
     '{deltemplate ' + moduleName + '.' + surfaceName + '}\n' +
       '{delcall ' + moduleName + '.' + surfaceName + ' variant="\'element\'" data="all"}\n' +
         '{param elementContent kind="html"}\n' +
