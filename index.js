@@ -242,9 +242,7 @@ function createComponentTemplateSoy(moduleName) {
     '{deltemplate ComponentTemplate variant="\'' + moduleName + '\'"}\n' +
     '{delcall ComponentElement data="all" variant="\'' + moduleName + '\'"}\n' +
       '{param elementContent kind="html"}\n' +
-        '{if $ij.renderChildComponents}\n' +
-          '{call .content data="all" /}\n' +
-        '{/if}\n' +
+        '{call .content data="all" /}\n' +
       '{/param}\n' +
     '{/delcall}\n' +
   '{/deltemplate}\n';
@@ -267,9 +265,7 @@ function createSurfaceSoy(moduleName, surfaceName) {
     '{deltemplate ' + moduleName + '.' + surfaceName + '}\n' +
       '{delcall ' + moduleName + '.' + surfaceName + ' variant="\'element\'" data="all"}\n' +
         '{param elementContent kind="html"}\n' +
-          '{if $ij.renderChildComponents}\n' +
-              '{call .' + surfaceName + ' data="all" /}\n' +
-          '{/if}\n' +
+            '{call .' + surfaceName + ' data="all" /}\n' +
         '{/param}\n' +
       '{/delcall}\n' +
     '{/deltemplate}\n';
