@@ -28,12 +28,14 @@ function handleError(error) {
 module.exports = function(options) {
   var bundleFileName = options.bundleFileName;
   var corePathFromSoy = options.corePathFromSoy || 'aui';
-  var shouldSkipSoyTemplatesGeneration = options.shouldSkipSoyTemplatesGeneration;
   var taskPrefix = options.taskPrefix || '';
   var buildDest = options.buildDest || 'build';
   var buildSrc = options.buildSrc || 'src/**/*.js';
   var jspmConfigFile = options.jspmConfigFile || 'config.js';
+  var soyBase = options.soyBase;
   var soyDest = options.soyDest || 'src';
+  var soyGenerationGlob = options.soyGenerationGlob === undefined ? '*.soy' : options.soyGenerationGlob;
+  var soyGeneratedOutputGlob = options.soyGeneratedOutputGlob === undefined ? '*.soy' : options.soyGeneratedOutputGlob;
   var soySrc = options.soySrc || 'src/**/*.soy';
   var globalName = options.globalName || 'aui';
 
@@ -77,10 +79,11 @@ module.exports = function(options) {
     });
   });
 
-  gulp.task(taskPrefix + 'soy', function() {
-    return gulp.src(soySrc)
-      .pipe(plugins.if(!shouldSkipSoyTemplatesGeneration, generateTemplatesAndExtractParams()))
-      .pipe(plugins.if(!shouldSkipSoyTemplatesGeneration, gulp.dest(buildDest)))
+  gulp.task(taskPrefix + 'soy', function(done) {
+    gulp.src(soySrc, {base: soyBase})
+      .pipe(plugins.if(soyGenerationGlob, generateTemplatesAndExtractParams()))
+      .pipe(plugins.if(soyGeneratedOutputGlob, gulp.dest(buildDest)))
+      .pipe(plugins.if(!soyGeneratedOutputGlob, plugins.if(soyGenerationGlob, gulp.dest('temp'))))
       .pipe(plugins.soynode({
         loadCompiledTemplates: false,
         shouldDeclareTopLevelNamespaces: false
@@ -90,7 +93,10 @@ module.exports = function(options) {
         header: getHeaderContent(corePathFromSoy),
         footer: getFooterContent
       }))
-      .pipe(gulp.dest(soyDest));
+      .pipe(gulp.dest(soyDest))
+      .on('end', function() {
+        del('temp', done);
+      });
   });
 
   gulp.task(taskPrefix + 'test', function(done) {
@@ -365,10 +371,16 @@ function getHasElementTemplateMap(templateCmds) {
 }
 
 function getHeaderContent(corePathFromSoy) {
-  var registryModulePath = path.join(corePathFromSoy, '/component/ComponentRegistry');
-  return '/* jshint ignore:start */\n' +
-    'import ComponentRegistry from \'' + registryModulePath + '\';\n' +
-    'var Templates = ComponentRegistry.Templates;\n';
+  return function(file) {
+    var corePath = corePathFromSoy;
+    if (typeof corePath === 'function') {
+      corePath = corePathFromSoy(file);
+    }
+    var registryModulePath = path.join(corePath, '/component/ComponentRegistry');
+    return '/* jshint ignore:start */\n' +
+      'import ComponentRegistry from \'' + registryModulePath + '\';\n' +
+      'var Templates = ComponentRegistry.Templates;\n';
+  };
 }
 
 function getTemplateInfo(templateString) {
