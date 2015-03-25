@@ -222,7 +222,7 @@ function createComponentElementSoy(moduleName, hasElementTemplate) {
   if (!hasElementTemplate) {
     fileString += '\n/**\n * @param? elementContent\n * @param? elementClasses\n * @param id\n */\n' +
       '{deltemplate ' + moduleName + ' variant="\'element\'"}\n' +
-        '<div id="{$id}" class="' + moduleName.toLowerCase() + ' {$elementClasses ? $elementClasses : \'\'}" data-component="">\n' +
+        '<div id="{$id}" class="' + moduleName.toLowerCase() + '{$elementClasses ? \' \' + $elementClasses : \'\'}" data-component="">\n' +
           '{$elementContent}\n' +
         '</div>\n' +
       '{/deltemplate}\n';
