@@ -271,7 +271,9 @@ function createSurfaceSoy(moduleName, surfaceName) {
     '{deltemplate ' + moduleName + '.' + surfaceName + '}\n' +
       '{delcall ' + moduleName + '.' + surfaceName + ' variant="\'element\'" data="all"}\n' +
         '{param elementContent kind="html"}\n' +
-            '{call .' + surfaceName + ' data="all" /}\n' +
+            '{if not $ij.skipSurfaceContents}\n' +
+              '{call .' + surfaceName + ' data="all" /}\n' +
+            '{/if}\n' +
         '{/param}\n' +
       '{/delcall}\n' +
     '{/deltemplate}\n';
