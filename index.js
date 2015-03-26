@@ -248,7 +248,9 @@ function createComponentTemplateSoy(moduleName) {
     '{deltemplate ComponentTemplate variant="\'' + moduleName + '\'"}\n' +
     '{delcall ComponentElement data="all" variant="\'' + moduleName + '\'"}\n' +
       '{param elementContent kind="html"}\n' +
-        '{call .content data="all" /}\n' +
+        '{if not $ij.skipNestedComponentContents}\n' +
+          '{call .content data="all" /}\n' +
+        '{/if}\n' +
       '{/param}\n' +
     '{/delcall}\n' +
   '{/deltemplate}\n';
