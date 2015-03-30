@@ -269,17 +269,17 @@ function createSurfaceElementSoy(moduleName, surfaceName, hasElementTemplate) {
 function createSurfaceSoy(moduleName, surfaceName) {
   return '\n/**\n * @param? elementContent\n * @param id\n */\n' +
     '{deltemplate ' + moduleName + '.' + surfaceName + '}\n' +
-      '{delcall Surface}\n' +
-        '{param content kind="html"}\n' +
-          '{delcall ' + moduleName + '.' + surfaceName + ' variant="\'element\'" data="all"}\n' +
-            '{param elementContent kind="html"}\n' +
-                '{if not $ij.skipSurfaceContents}\n' +
-                  '{call .' + surfaceName + ' data="all" /}\n' +
-                '{/if}\n' +
-            '{/param}\n' +
-          '{/delcall}\n' +
+      '{delcall ' + moduleName + '.' + surfaceName + ' variant="\'element\'" data="all"}\n' +
+        '{param elementContent kind="html"}\n' +
+          '{if not $ij.skipSurfaceContents}\n' +
+            '{delcall Surface}\n' +
+              '{param content kind="html"}\n' +
+                '{call .' + surfaceName + ' data="all" /}\n' +
+              '{/param}\n' +
+              '{param id: $id + \'-' + surfaceName + '\' /}\n' +
+            '{/delcall}\n' +
+          '{/if}\n' +
         '{/param}\n' +
-        '{param id: $id + \'-' + surfaceName + '\' /}\n' +
       '{/delcall}\n' +
     '{/deltemplate}\n';
 }
